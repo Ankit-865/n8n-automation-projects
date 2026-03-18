@@ -1,0 +1,144 @@
+{
+  "name": "News AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "306769bb-0397-40ba-bb99-1b4e7b9a0115",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=technology&language=en&sortBy=publishedAt&apiKey=50a85f7835364cfc8685c534a736ea2e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c40354dc-39e3-4be3-8ea6-3dac46f89d01",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Format these 5 news articles into a clean email briefing with Title, 2 line summary, Source and URL:\n\n{{JSON.stringify($json.articles)}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7cce956a-77f1-4ce2-b11a-50fee91cb76c",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IsYcv5jAFR89BN8U",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ankitn171@gmail.com",
+        "subject": "=📰 Daily News Briefing - {{$now.format('dd MMM yyyy')}}",
+        "emailType": "text",
+        "message": "={{$json.content.parts[0].text}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "b4249721-50af-45c9-acc0-ec7a1b0909a6",
+      "name": "Send a message",
+      "webhookId": "3ad1a44a-f313-4733-b66f-74d836d889f0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EnXniVZEfeXcUObC",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "067161e0-ac70-455f-aa08-4496c514d56b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eed733a5e379c94e3fe8fa32ef958bc7d88593ec7d4bc17054441b36a3f5aad9"
+  },
+  "id": "XYOatf1SQWf0XANP",
+  "tags": []
+}
